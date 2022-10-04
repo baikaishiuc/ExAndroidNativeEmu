@@ -118,7 +118,9 @@ def get_module_by_addr(emu, addr):
 # print code and its moudle in a line
 DUMP_REG_READ=1
 DUMP_REG_WRITE=2
-def dump_code(emu, address, size, fd, dump_reg_type=DUMP_REG_READ):  
+
+g_prev_mod=""
+def dump_code(emu, address, size, fd, dump_reg_type=DUMP_REG_READ):
     mu = emu.mu
     if (emu.get_arch() == emu_const.ARCH_ARM32):
         #判断是否arm，用不同的decoder
@@ -149,31 +151,51 @@ def dump_code(emu, address, size, fd, dump_reg_type=DUMP_REG_READ):
             funName = module.is_symbol_addr(addr)
         #
 
+        # 跳过所有的libc.so的dump，除了第一行
+        global g_prev_mod
+        if (g_prev_mod == name) and (g_prev_mod == "libc.so"):
+            continue
+
+        g_prev_mod = name
+
         instruction_str = ''.join('{:02X} '.format(x) for x in i.bytes)
         tid = ""
         if (emu.get_muti_task_support()):
             sch = emu.get_schduler()
             tid = "%d:"%sch.get_current_tid()
-        line = "%s(%20s[0x%08X])[%-12s]0x%08X:\t%s\t%s"%(tid, name, base, instruction_str, addr-base, i.mnemonic.upper(), i.op_str.upper())
+        #line = "%s(%20s[0x%08X])[%-12s]0x%08X:\t%s\t%s"%(tid, name, base, instruction_str, addr-base, i.mnemonic.upper(), i.op_str.upper())
+        line = "%s(%20s[0x%08X])[%-12s]0x%08X:0x%08x:\t%s\t%s"%(tid, name, base, instruction_str, addr, addr-base, i.mnemonic.upper(), i.op_str.upper())
         if (funName != None):
             line = line + " ; %s"%funName
         #
         regs = i.regs_access()
-        if (DUMP_REG_READ == dump_reg_type):
-            regs_dump = regs[0]
-        elif(DUMP_REG_WRITE == dump_reg_type):
-            regs_dump = regs[1]
+        #if (DUMP_REG_READ == dump_reg_type):
+        #    regs_dump = regs[0]
+        #elif(DUMP_REG_WRITE == dump_reg_type):
+        #    regs_dump = regs[1]
         #
+
+        regs_dump = regs[1]
         regs_io = io.StringIO()
         for rid in regs_dump:
             reg_str = "%s=0x%08X "%(i.reg_name(rid).upper(), mu.reg_read(rid))
             regs_io.write(reg_str)
         #
+        regs_dump = regs[0]
+        regs_io = io.StringIO()
+        for rid in regs_dump:
+            reg_str = "%s=0x%08X "%(i.reg_name(rid).upper(), mu.reg_read(rid))
+            regs_io.write(reg_str)
+        #
+
         regs = regs_io.getvalue()
         if (regs != ""):
             line = "%s\t;(%s)"%(line, regs)
         #
         fd.write(line+"\n")
+
+        if (name == "libc.so"):
+            fd.write("......................................................................\n")
 #
 
 def dump_stack(emu, fd, max_deep=512):
@@ -192,5 +214,5 @@ def dump_stack(emu, fd, max_deep=512):
         line = "0x%08X: 0x%08X\n"%(ptr, val)
         fd.write(line)
     #
-    
+
 #
