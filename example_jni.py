@@ -2,6 +2,7 @@ import logging
 import posixpath
 import sys
 import os
+import time
 
 from unicorn import *
 from unicorn.arm_const import *
@@ -15,7 +16,12 @@ from androidemu.utils.chain_log import ChainLogger
 import capstone
 import traceback
 
+def cur_ts():
+    return round(time.time() * 1000)
+
 g_cfd = ChainLogger(sys.stdout, "./ins-jni.txt")
+g_inst_count=0
+g_inst_start_ts = cur_ts()
 # Add debugging.
 def hook_code(mu, address, size, user_data):
     try:
@@ -23,9 +29,10 @@ def hook_code(mu, address, size, user_data):
         if (not emu.memory.check_addr(address, UC_PROT_EXEC)):
             logger.error("addr 0x%08X out of range"%(address,))
             sys.exit(-1)
-        #
-        #androidemu.utils.debug_utils.dump_registers(mu, sys.stdout)
-        androidemu.utils.debug_utils.dump_code(emu, address, size, g_cfd)
+        #androidemu.utils.debug_utils.dump_registers(emu, sys.stdout)
+        androidemu.utils.debug_utils.dump_code(emu, address, size, g_cfd, androidemu.utils.debug_utils.DUMP_REG_WRITE)
+        global g_inst_count
+        g_inst_count += 1
     except Exception as e:
         logger.exception("exception in hook_code")
         sys.exit(-1)
@@ -34,7 +41,7 @@ def hook_code(mu, address, size, user_data):
 
 def hook_mem_read(uc, access, address, size, value, user_data):
     pc = uc.reg_read(UC_ARM_REG_PC)
-    
+
     if (address == 0xCBC80640):
         logger.debug("read mutex")
         data = uc.mem_read(address, size)
@@ -66,6 +73,8 @@ class MainActivity(metaclass=JavaClassDef, jvm_name='local/myapp/testnativeapp/M
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+
 # Initialize emulator
 emulator = Emulator(
     vfs_root=posixpath.join(posixpath.dirname(__file__), "vfs")
@@ -83,6 +92,8 @@ lib_module = emulator.load_library("tests/bin/libnative-lib_jni.so")
 
 #androidemu.utils.debug_utils.dump_symbols(emulator, sys.stdout)
 
+#logger.setLevel(5)
+
 # Show loaded modules.
 logger.info("Loaded modules:")
 
@@ -92,7 +103,11 @@ for module in emulator.modules:
 try:
     # Run JNI_OnLoad.
     #   JNI_OnLoad will call 'RegisterNatives'.
+    g_inst_start_ts = cur_ts()
     emulator.call_symbol(lib_module, 'JNI_OnLoad', emulator.java_vm.address_ptr, 0x00)
+
+    spent_ts = cur_ts() - g_inst_start_ts
+    print("***** %d instruction spent %fms, %d inst/s" % (g_inst_count, spent_ts, g_inst_count * 1000 / spent_ts))
 
     # Do native stuff.
     main_activity = MainActivity()
