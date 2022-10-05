@@ -11,7 +11,7 @@ class ChainLogger:
         if (self.log == None):
             self.log = open(self.path, "w")
         #
-        self.log.write(message)  
+        self.log.write(message)
     #
 
     def flush(self):

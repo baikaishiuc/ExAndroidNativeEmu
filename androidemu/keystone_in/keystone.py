@@ -30,7 +30,8 @@ for _lib in _all_libs:
         _ks = cdll.LoadLibrary(_lib_file)
         _found = True
         break
-    except OSError:
+    except OSError as e:
+        print(e)
         pass
 
 if _found == False:

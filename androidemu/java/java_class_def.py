@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 #2.所有模拟的java函数（java_method_def修饰的函数）除八个基本类型外， 传入传出都是java类型，例如字符串用String，整数用Integer，注意区分Integer和Int，Integer是对象不属于八个基本类型，
 #3.需要看函数返回值签名分析，如果是八个基本类型，用python整数代表java整数，用python float代表java double和float
 class JavaClassDef(type):
-    
+
     def __init__(cls, name, base, ns, jvm_name=None, jvm_fields=None, jvm_ignore=False, jvm_super=None):
         cls.jvm_id = next_cls_id()
         cls.jvm_name = jvm_name
@@ -59,7 +59,7 @@ class JavaClassDef(type):
         logger.debug("Registered native function ('%s', '%s', ''0x%08X'') to %s.%s" % (name, signature, ptr_func,
                                                                            cls.__name__, found_method.func_name))
     #
-    
+
     def find_method(cls, name, signature):
         for method in cls.jvm_methods.values():
             if method.name == name and method.signature == signature:

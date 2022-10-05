@@ -453,12 +453,12 @@ class JNIEnv:
         if args_type_list is None:
             return result
         #
-        ptr_size = self._emu.get_ptr_size()            
+        ptr_size = self._emu.get_ptr_size()
         for arg_name in args_type_list:
             v = int.from_bytes(mu.mem_read(args_ptr, ptr_size), byteorder='little')
             if arg_name in ('jint', "jchar", "jbyte", "jboolean", "jlong", "jdouble"):
                 result.append(v)
-            
+
             elif arg_name == 'jstring' or arg_name == "jobject":
                 ref = v
                 jobj = self.get_reference(ref)
@@ -729,7 +729,7 @@ class JNIEnv:
         obj2 = self.get_reference(ref2)
         pyobj1 = self.jobject_to_pyobject(obj1)
         pyobj2 = self.jobject_to_pyobject(obj2)
-        
+
         if pyobj1 is pyobj2:
             return JNI_TRUE
         #
@@ -771,7 +771,7 @@ class JNIEnv:
 
         # Create class instance.
         class_obj = jclazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         obj = pyclazz()
@@ -841,7 +841,7 @@ class JNIEnv:
         # TODO: Casting check (?)
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         pyobj = JNIEnv.jobject_to_pyobject(obj)
@@ -864,7 +864,7 @@ class JNIEnv:
         #
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         logging.debug("get_method_id type %s"%(pyclazz))
@@ -1014,7 +1014,7 @@ class JNIEnv:
     def call_long_method_a(self, mu, env):
         raise NotImplementedError()
     #
-    
+
     @native_method
     def call_float_method(self, mu, env, obj_idx, method_id, arg1, arg2, arg3, arg4):
         return self.__call_xxx_method(mu, env, obj_idx, method_id, (arg1, arg2, arg3, arg4), 0)
@@ -1194,7 +1194,7 @@ class JNIEnv:
         logger.debug("JNIEnv->GetFieldId(%d, %s, %s) was called" % (clazz_idx, name, sig))
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         field = pyclazz.find_field(name, sig, False)
@@ -1293,7 +1293,7 @@ class JNIEnv:
         #
         logger.debug("JNIEnv->SetXXXField(%s, %s <%s>, %r) was called" % (pyobj.jvm_name,
                                                                          field.name,
-                                                                         field.signature, 
+                                                                         field.signature,
                                                                          value))
 
         v = None
@@ -1369,7 +1369,7 @@ class JNIEnv:
         #
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
         method = pyclazz.find_method(name, sig)
 
@@ -1392,7 +1392,7 @@ class JNIEnv:
             raise ValueError('Expected a jclass.')
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         method = pyclazz.find_method_by_id(method_id)
@@ -1480,7 +1480,7 @@ class JNIEnv:
     def call_static_short_method(self, mu, env, clazz_idx, method_id, arg1, arg2, arg3, arg4):
         return self.__call_static_xxx_method(mu, env, clazz_idx, method_id, (arg1, arg2, arg3, arg4), 0)
     #
-        
+
     @native_method
     def call_static_short_method_v(self, mu, env, clazz_idx, method_id, args):
         return self.__call_static_xxx_method(mu, env, clazz_idx, method_id, args, 1)
@@ -1581,7 +1581,7 @@ class JNIEnv:
         clazz = self.get_reference(clazz_idx)
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         field = pyclazz.find_field(name, sig, True)
@@ -1604,7 +1604,7 @@ class JNIEnv:
         clazz = self.get_reference(clazz_idx)
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         field = pyclazz.find_field_by_id(field_id)
@@ -1701,7 +1701,7 @@ class JNIEnv:
             raise ValueError('Expected a jclass.')
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
 
         field = pyclazz.find_field_by_id(field_id)
@@ -1744,7 +1744,7 @@ class JNIEnv:
 
     @native_method
     def get_string_utf_length(self, mu, env, string):
-        
+
         str_ref = self.get_reference(string)
         str_obj = str_ref.value
         if (str_obj == JAVA_NULL):
@@ -1781,7 +1781,7 @@ class JNIEnv:
 
     @native_method
     def release_string_utf_chars(self, mu, env, string, utf8_ptr):
-        
+
         pystr = memory_helpers.read_utf8(mu, utf8_ptr)
         logger.debug("JNIEnv->ReleaseStringUtfChars(%u, %s) was called" % (string, pystr))
         if (utf8_ptr != 0):
@@ -1809,16 +1809,16 @@ class JNIEnv:
         #
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
-        
+
         arr_item_cls_name = pyclazz.jvm_name
 
         pyarr = []
         for i in range(0, size):
             pyarr.append(JAVA_NULL)
         #
-        
+
         if (obj_init != JAVA_NULL):
             obj = self.get_reference(obj_init)
             pyobj = self.jobject_to_pyobject(obj)
@@ -1829,7 +1829,7 @@ class JNIEnv:
         if (arr_item_cls_name[0] == "["):
             new_jvm_name = "[%s"%arr_item_cls_name
         #
-        else: 
+        else:
             new_jvm_name = "[L%s;"%arr_item_cls_name
         #
         pyarray_clazz = self._class_loader.find_class_by_name(new_jvm_name)
@@ -1842,7 +1842,7 @@ class JNIEnv:
         #
         arr = pyarray_clazz(pyarr)
         return self.add_local_reference(jobject(arr))
-        
+
     #
 
     @native_method
@@ -2090,7 +2090,7 @@ class JNIEnv:
             raise ValueError('Expected a jclass but type %r value %r getted.'%(type(clazz), clazz))
 
         class_obj = clazz.value
-        
+
         pyclazz = class_obj.get_py_clazz()
         ptr_sz = self._emu.get_ptr_size()
 

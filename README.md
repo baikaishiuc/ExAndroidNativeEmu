@@ -15,12 +15,12 @@ This is a personal improved version of [AndroidNativeEmu](https://github.com/Aeo
  - Support Arm64
  - Support multi-threaded like pthread_create etc.
  - Add Function hook feature
- 
+
 ## TODO
  - ~~Simulate linker TLS initialization.~~
  - ~~Support well known virtual file like /proc/self/maps...~~
  - ~~Get rid of dependency on Section Header when loading ELF~~.
- 
+
 ## Usage
 
 > In the future this will be possible through pypi.

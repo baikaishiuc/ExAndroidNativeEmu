@@ -4,7 +4,7 @@ from ..java_method_def import java_method_def, JavaMethodDef
 from .array import *
 
 class String(metaclass=JavaClassDef, jvm_name='java/lang/String'):
-    
+
     def __init__(self, pystr=""):
         assert type(pystr) == str
         self.__str = pystr
