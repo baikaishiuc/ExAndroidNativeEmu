@@ -115,7 +115,7 @@ class Emulator:
 
         #also add classloader as java class
         self.java_classloader.add_class(JavaClassLoader)
-        
+
     #
 
     """
@@ -132,7 +132,7 @@ class Emulator:
         self.__arch = arch
         self.__support_muti_task = muti_task
         self.__pcb = pcb.Pcb()
-        
+
         logging.info("process pid:%d"%self.__pcb.get_pid())
 
         sp_reg = 0
@@ -151,7 +151,7 @@ class Emulator:
             self.mu = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
             if vfp_inst_set:
                 self.__enable_vfp64()
-            # 
+            #
             sp_reg = UC_ARM64_REG_SP
 
             self.call_native = self.__call_native64
@@ -166,21 +166,21 @@ class Emulator:
         #而这里直接将0映射空间，,强行运行过去，因为R1刚好为0,否则会报memory unmap异常
         #最新版本已经解决这个问题，无需再这么映射
         #self.mu.mem_map(0x0, 0x00001000, UC_PROT_READ | UC_PROT_WRITE)
-        
+
         # Android 4.4
         if arch == emu_const.ARCH_ARM32:
-            self.system_properties = {"libc.debug.malloc.options": "", "ro.build.version.sdk":"19", "ro.build.version.release":"4.4.4","persist.sys.dalvik.vm.lib":"libdvm.so", "ro.product.cpu.abi":"armeabi-v7a", "ro.product.cpu.abi2":"armeabi", 
-                "ro.product.manufacturer":"LGE", "ro.product.manufacturer":"LGE", "ro.debuggable":"0", "ro.product.model":"AOSP on HammerHead","ro.hardware":"hammerhead", "ro.product.board":"hammerhead", "ro.product.device":"hammerhead", 
-                "ro.build.host":"833d1eed3ea3", "ro.build.type":"user", 
+            self.system_properties = {"libc.debug.malloc.options": "", "ro.build.version.sdk":"19", "ro.build.version.release":"4.4.4","persist.sys.dalvik.vm.lib":"libdvm.so", "ro.product.cpu.abi":"armeabi-v7a", "ro.product.cpu.abi2":"armeabi",
+                "ro.product.manufacturer":"LGE", "ro.product.manufacturer":"LGE", "ro.debuggable":"0", "ro.product.model":"AOSP on HammerHead","ro.hardware":"hammerhead", "ro.product.board":"hammerhead", "ro.product.device":"hammerhead",
+                "ro.build.host":"833d1eed3ea3", "ro.build.type":"user",
                 "ro.secure":"1", "wifi.interface":"wlan0", "ro.product.brand":"Android",
                 }
         #
         else:
             #FIXME 这里arm64用 6.0，应该arm32也统一使用6.0
             # Android 6.0
-            self.system_properties = {"libc.debug.malloc.options": "", "ro.build.version.sdk":"23", "ro.build.version.release":"6.0.1","persist.sys.dalvik.vm.lib2":"libart.so", "ro.product.cpu.abi":"arm64-v8a", 
-                "ro.product.manufacturer":"LGE", "ro.product.manufacturer":"LGE", "ro.debuggable":"0", "ro.product.model":"AOSP on HammerHead","ro.hardware":"hammerhead", "ro.product.board":"hammerhead", "ro.product.device":"hammerhead", 
-                "ro.build.host":"833d1eed3ea3", "ro.build.type":"user", 
+            self.system_properties = {"libc.debug.malloc.options": "", "ro.build.version.sdk":"23", "ro.build.version.release":"6.0.1","persist.sys.dalvik.vm.lib2":"libart.so", "ro.product.cpu.abi":"arm64-v8a",
+                "ro.product.manufacturer":"LGE", "ro.product.manufacturer":"LGE", "ro.debuggable":"0", "ro.product.model":"AOSP on HammerHead","ro.hardware":"hammerhead", "ro.product.board":"hammerhead", "ro.product.device":"hammerhead",
+                "ro.build.host":"833d1eed3ea3", "ro.build.type":"user",
                 "ro.secure":"1", "wifi.interface":"wlan0", "ro.product.brand":"Android",
             }
         #
@@ -248,6 +248,11 @@ class Emulator:
         libmod = self.modules.load_module(filename, True)
         return libmod
     #
+
+    def call_addr(self, module, reladdr, *argv):
+        baseaddr = module.base + reladdr
+
+        return self.call_native(baseaddr, *argv)
 
     def call_symbol(self, module, symbol_name, *argv):
         symbol_addr = module.find_symbol(symbol_name)
