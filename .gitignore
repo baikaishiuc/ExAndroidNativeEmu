@@ -281,3 +281,15 @@ $RECYCLE.BIN/
 
 !/tests/test_binaries/test_native.so
 *.idb
+vfs/proc/self/status
+vfs/proc/self/maps
+vfs/dev/log/system
+vfs/dev/log/radio
+vfs/dev/log/events
+vfs/dev/log/main
+.vscode/launch.json
+eg-nmusic-jni.txt
+eg-nmusic-jni2.txt
+ins-jni.txt
+mem-mnt-dy8.txt
+eg-nmusic-jni-debug.txt
